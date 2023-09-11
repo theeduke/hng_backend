@@ -9,7 +9,7 @@ def api():
     
     current_day = datetime.utcnow().strftime('%A')
     
-    current_utc_time = datetime.utcnow() + timedelta(hours=2)
+    current_utc_time = datetime.utcnow() + timedelta(hours=1 )
     
     track = request.args.get('track', type=str)
     
@@ -17,7 +17,7 @@ def api():
     
     if(request.method == 'GET'):
         data = {
-            "name" : slack_name,
+            "slack_name" : slack_name,
             "current_day" : current_day,
             "current_utc_time" : current_utc_time.strftime('%Y-%m-%d %H:%M:%S'),
             "track" : track,
