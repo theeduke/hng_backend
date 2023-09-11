@@ -19,7 +19,7 @@ def api():
         data = {
             "slack_name" : slack_name,
             "current_day" : current_day,
-            "utc_time" : current_utc_time.strftime('%Y-%m-%d %H:%M:%SZ'),
+            "utc_time" : current_utc_time.strftime('%Y-%m-%dT%H:%M:%SZ'),
             "track" : track,
             "github_file_url": "https://github.com/theeduke/hng_backend/blob/main/server.py",
             "github_repo_url": "https://github.com/theeduke/hng_backend",
