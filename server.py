@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from datetime import datetime, timedelta
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -9,7 +9,7 @@ def api():
     
     current_day = datetime.utcnow().strftime('%A')
     
-    current_utc_time = datetime.utcnow() + timedelta(hours=2 )
+    current_utc_time = datetime.utcnow()
     
     track = request.args.get('track', type=str)
     
@@ -19,7 +19,7 @@ def api():
         data = {
             "slack_name" : slack_name,
             "current_day" : current_day,
-            "utc_time" : current_utc_time.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            "utc_time" : current_utc_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "track" : track,
             "github_file_url": "https://github.com/theeduke/hng_backend/blob/main/server.py",
             "github_repo_url": "https://github.com/theeduke/hng_backend",
