@@ -9,7 +9,7 @@ def api():
     
     current_day = datetime.utcnow().strftime('%A')
     
-    current_utc_time = datetime.utcnow() + timedelta(hours=1 )
+    current_utc_time = datetime.utcnow() + timedelta(hours=2 )
     
     track = request.args.get('track', type=str)
     
