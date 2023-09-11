@@ -6,10 +6,7 @@ app = Flask(__name__)
 @app.route('/api', methods = ['GET'])
 def api():
     slack_name = request.args.get('slack name')
-    if not slack_name:
-        return jsonify(error = "slack name parameter is missing"), 400
-    if slack_name == data['slack_name']:
-        return jsonify(data), 200
+    
     current_day = datetime.utcnow().strftime('%A')
     
     current_utc_time = datetime.utcnow() + timedelta(hours=2)
