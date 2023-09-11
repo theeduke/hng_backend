@@ -5,13 +5,13 @@ app = Flask(__name__)
 
 @app.route('/api', methods = ['GET'])
 def api():
-    slack_name = request.args.get('slack name')
+    slack_name = request.args.get('slack name',type=str)
     
     current_day = datetime.utcnow().strftime('%A')
     
     current_utc_time = datetime.utcnow() + timedelta(hours=2)
     
-    track = request.args.get('backend')
+    track = request.args.get('track', type=str)
     
     #JSON object to be returned
     
