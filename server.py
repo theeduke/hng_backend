@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/api', methods = ['GET'])
 def api():
-    slack_name = request.args.get('slack name',type=str)
+    slack_name = request.args.get('slack_name',type=str)
     
     current_day = datetime.utcnow().strftime('%A')
     
