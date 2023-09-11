@@ -5,9 +5,9 @@ app = Flask(__name__)
 
 @app.route('/api', methods = ['GET'])
 def api():
-    name = request.args.get('name')
-    if not name:
-        return jsonify(error = "name parameter is missing"), 400
+    slack_name = request.args.get('slack name')
+    if not slack_name:
+        return jsonify(error = "slack name parameter is missing"), 400
     current_day = datetime.utcnow().strftime('%A')
     
     current_utc_time = datetime.utcnow() + timedelta(hours=2)
@@ -18,7 +18,7 @@ def api():
     
     if(request.method == 'GET'):
         data = {
-            "name" : name,
+            "name" : slack_name,
             "current_day" : current_day,
             "current_utc_time" : current_utc_time.strftime('%Y-%m-%d %H:%M:%S'),
             "track" : track,
