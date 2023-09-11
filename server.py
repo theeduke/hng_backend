@@ -12,8 +12,6 @@ def api():
     current_utc_time = datetime.utcnow() + timedelta(hours=2)
     
     track = request.args.get('backend')
-    if not track:
-        return jsonify(error = "track parameter is missing"), 400
     
     #JSON object to be returned
     
