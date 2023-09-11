@@ -22,9 +22,9 @@ def api():
             "current_day" : current_day,
             "current_utc_time" : current_utc_time.strftime('%Y-%m-%d %H:%M:%S'),
             "track" : track,
-            "github_url_file": "https://github.com/your_username/your_repository/blob/main/app.py",
-            "github_url_source": "https://github.com/your_username/your_repository"
-            
+            "github_url_file": "https://github.com/theeduke/hng_backend/blob/main/server.py",
+            "github_url_source": "https://github.com/theeduke/hng_backend",
+            "status code" : 200
         }
   
         return jsonify(data),  200
