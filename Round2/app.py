@@ -18,6 +18,8 @@ def hello():
         visitor_name = visitor_name.strip('"')
 
     client_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+    # cf-connecting-ip
+    # x-real-ip
 
 #     # Get location from IP address using GeoIP API/ exhausted free tier
     # geoip_url = f'http://api.ipstack.com/{client_ip}?access_key={GEOIP_API_KEY}'
