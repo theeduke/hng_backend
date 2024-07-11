@@ -4,9 +4,6 @@ import uuid
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
-from django.contrib.auth.models import BaseUserManager
-import uuid
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -28,9 +25,9 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    id = models.AutoField(primary_key=True)  # AutoField with primary_key=True generates an integer primary key
-    userId = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-    
+    # id = models.AutoField(primary_key=True)  # AutoField with primary_key=True generates an integer primary key
+    userId = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, primary_key=True)
+    # userId = models.CharField(unique=True, max_length=255, null=False, primary_key=True)
     email = models.EmailField(unique=True, null=False)
     first_name = models.CharField(max_length=30, null=False)
     last_name = models.CharField(max_length=30, null=False)
@@ -48,9 +45,22 @@ class CustomUser(AbstractBaseUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
+    
+    def __str__(self):
+        return self.userId
+    class Meta:
+        verbose_name = "CustomUser"
+        verbose_name_plural = "CustomUsers"
+    
 
 class Organisation(models.Model):
-    orgId = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    orgId = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, primary_key=True)
     name = models.CharField(max_length=255, null=False)
     description = models.TextField(blank=True, null=True)
     users = models.ManyToManyField(CustomUser, related_name='organisations')
+
+    def __str__(self):
+        return self.name
+    class Meta:
+        verbose_name = "Organisation"
+        verbose_name_plural = "Organisations"

@@ -36,6 +36,11 @@ INSTALLED_APPS = [
     'userorganization',
 ]
 
+AUTH_USER_MODEL = 'userorganization.CustomUser'
+
+# APPEND_SLASH = False
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -139,7 +144,7 @@ REST_FRAMEWORK = {
 
 #Simple-jwt
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -157,6 +162,7 @@ SIMPLE_JWT = {
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    # 'USER_ID_FIELD': 'id',
     'USER_ID_FIELD': 'userId',
     'USER_ID_CLAIM': 'userId',
     'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
@@ -172,3 +178,4 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
     #"TOKEN_OBTAIN_SERIALIZER": "users.serializers.MyTokenObtainPairSerializer"
 }
+

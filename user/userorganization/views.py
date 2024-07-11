@@ -1,25 +1,30 @@
 from django.shortcuts import render
 from rest_framework import status, generics, permissions
+from userorganization.permissions import IsMemberOfOrganisation
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Organisation,CustomUser
-from .serializers import UserSerializer, OrganisationSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
-
+from userorganization.models import Organisation,CustomUser
+from userorganization.serializers import UserSerializer, OrganisationSerializer, RegisterSerializer, UserDetailSerializer
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken, TokenError
+from rest_framework import viewsets
+from userorganization.token_utils import generate_access_token, decode_access_token
 # Create your views here.
 
 class RegisterView(APIView):
+    
     def post(self, request, *args, **kwargs):
-        serializer = UserSerializer(data=request.data)
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 user = serializer.save()
                 org_name = f"{user.first_name}'s Organisation"
                 Organisation.objects.create(name=org_name).users.add(user)
 
-                refresh = RefreshToken.for_user(user)
+                # refresh = RefreshToken.for_user(user)
+                access_token = generate_access_token(user)
                 user_data = {
-                    'userId': serializer.data['userId'],
+                    # 'userId': serializer.data['userId'],
+                    'userId': str(user.userId),
                     'email': serializer.data['email'],
                     'first_name':serializer.data['first_name'],
                     'last_name':serializer.data['last_name'],
@@ -29,7 +34,8 @@ class RegisterView(APIView):
                     'status': 'success',
                     'message': 'Registration successful',
                     'data': {
-                        'accessToken': str(refresh.access_token),
+                        # 'accessToken': str(refresh.access_token),
+                        'accessToken': access_token,
                         'user': user_data
                     }
                 }, status=status.HTTP_201_CREATED)
@@ -48,13 +54,15 @@ class RegisterView(APIView):
     
 
 class LoginView(APIView):
+        
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')
         user = CustomUser.objects.filter(email=email).first()
 
         if user and user.check_password(password):
-            refresh = RefreshToken.for_user(user)
+            access_token = generate_access_token(user)
+            # refresh = RefreshToken.for_user(user)
             user_data = {
                 'userId': str(user.userId),  
                 'email': user.email,
@@ -66,7 +74,8 @@ class LoginView(APIView):
                 'status': 'success',
                 'message': 'Login successful',
                 'data': {
-                    'accessToken': str(refresh.access_token),
+                    # 'accessToken': str(refresh.access_token),
+                    'accessToken': access_token,
                     'user': user_data
                 }
             }, status=status.HTTP_200_OK)
@@ -78,46 +87,76 @@ class LoginView(APIView):
 
 class UserDetailView(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserDetailSerializer
+    permission_classes = [permissions.IsAuthenticated, IsMemberOfOrganisation]
     lookup_field = 'userId'
-
-    def get_queryset(self):
-        user = self.request.user
-        org_ids = user.organisations.values_list('orgId', flat=True)
-        return CustomUser.objects.filter(organisations__orgId__in=org_ids)
     
-
-
-class OrganisationListView(generics.ListAPIView):
-    serializer_class = OrganisationSerializer
-    permission_classes = [permissions.IsAuthenticated]
- 
     def get_queryset(self):
+        # Ensure we only allow access to the logged-in user's details
         user = self.request.user
-        return Organisation.objects.filter(users=user)
+        return CustomUser.objects.filter(userId=user.userId)
+
+    
 
 class OrganisationDetailView(generics.RetrieveAPIView):
     queryset = Organisation.objects.all()
     serializer_class = OrganisationSerializer
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'orgId'
 
-class OrganisationCreateView(generics.CreateAPIView):
+# class OrganisationCreateView(generics.CreateAPIView):
+class OrganisationCreateView(APIView):
     serializer_class = OrganisationSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def perform_create(self, serializer):
-        organisation = serializer.save()
-        organisation.users.add(self.request.user)
+    
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        queryset = Organisation.objects.filter(users=user)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response({
+            'status': 'success',
+            'message': 'Organisation details',
+            'data': {
+                'organisations': serializer.data
+            }
+        }, status=status.HTTP_200_OK)
+    
+    def post(self, request, *args, **kwargs):
+        # serializer = self.get_serializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
+        # if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
+            try:
+                organisation = serializer.save()
+                organisation.users.add(request.user)
+                return Response({
+                    'status': 'success',
+                    'message': 'Organisation created successfully',
+                    'data': {
+                        'organisation': serializer.data
+                    }
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({
+                    'status': 'Bad Request',
+                    'message': 'Client error',
+                    'statusCode': 400
+                }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': 'Client error',
+            'statusCode': 400
+        }, status=status.HTTP_400_BAD_REQUEST)
+            
 
 class AddUserToOrganisationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, org_id):
-        user_id = request.data.get('id')
+    def post(self, request, orgId):
+        user_id = request.data.get('userId')
         try:
-            user = CustomUser.objects.get(id=user_id)
-            organisation = Organisation.objects.get(id=org_id)
+            user = CustomUser.objects.get(userId=user_id)
+            organisation = Organisation.objects.get(orgId=orgId)
             organisation.users.add(user)
             return Response({
                 'status': 'success',
